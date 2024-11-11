@@ -15,6 +15,7 @@ services:
   wordpress:
     depends_on:
       - db
+    container_name: wordpress
     image: wordpress:latest
     volumes:
       - ./data/html:/var/www/html
@@ -31,6 +32,7 @@ services:
 
   db:
     image: mysql:5.7
+    container_name: db
     volumes:
       - ./data/mysql:/var/lib/mysql
     restart: always
@@ -45,23 +47,37 @@ services:
         hard: 262144
     networks:
       - monitoring
+    ports:
+      - 3306:3306
 
-  services:
-    node-exporter:
-      image: prom/node-exporter:latest
-      container_name: node-exporter
-      restart: unless-stopped
-      volumes:
-        - /proc:/host/proc:ro
-        - /sys:/host/sys:ro
-        - /::/rootfs:ro
-      command:
-        - '--path.procfs=/host/proc'
-        - '--path.rootfs=/rootfs'
-        - '--path.sysfs=/host/sys'
-        - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-    expose:
-      - 9100
+  db-exporter:
+    image: prom/mysqld-exporter
+    container_name: db-exporter
+    command:
+      - "--mysqld.username=root:${MYSQL_ROOT_PASSWORD}"
+      - "--mysqld.address=db:3306"
+    ports:
+      - 9104:9104
+    depends_on:
+      - db
+    networks:
+      - monitoring
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - 9100:9100
     networks:
       - monitoring
 
@@ -78,8 +94,23 @@ services:
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--web.enable-lifecycle'
-    expose:
-      - 9090
+    ports:
+      - 9090:9090
+    networks:
+      - monitoring
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest
+    container_name: blackbox-exporter
+    volumes: 
+      - ./blackbox.yml:/config/blackbox.yml
+    command:
+      - '--config.file=/config/blackbox.yml'
+    restart: unless-stopped
+    ports:
+      - 9115:9115
+    depends_on:
+      - wordpress
     networks:
       - monitoring
 
