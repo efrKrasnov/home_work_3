@@ -1,0 +1,31 @@
+target: all,overrides-exporter
+
+common:
+  storage:
+    backend: s3
+    s3:
+      endpoint: minio:9000
+      access_key_id: ${MINIO_ROOT_USER}
+      secret_access_key: ${MINIO_ROOT_PASSWORD}
+      insecure: true
+      bucket_name: mimir
+
+blocks_storage:
+  storage_prefix: blocks
+  tsdb:
+    dir: /data/ingester
+
+memberlist:
+  join_members: [mimir-1, mimir-2]
+
+ruler:
+  rule_path: /data/ruler
+  ring:
+    heartbeat_period: 2s
+    heartbeat_timeout: 10s
+
+limits:
+  compactor_blocks_retention_period: 14d
+
+server:
+  log_level: debug

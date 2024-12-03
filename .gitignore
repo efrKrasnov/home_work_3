@@ -1,3 +1,4 @@
 /data
 /logs
+/minio-data
 .env
