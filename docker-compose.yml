@@ -88,7 +88,7 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
-      - ./mimir-config/rules.yaml:/etc/prometheus/rules.yaml
+      - ./rules.yaml:/etc/prometheus/rules.yaml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--log.level=error'
@@ -101,6 +101,7 @@ services:
     depends_on:
       - "mimir-1"
       - "mimir-2"
+      - "mimir-3"
     networks:
       - monitoring
 
@@ -197,6 +198,20 @@ services:
     networks:
       - monitoring
 
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    hostname: alertmanager
+    volumes:
+      - ./alertmanager:/etc/alertmanager
+      - alertmanager-data:/alertmanager/data
+    command: ['--config.file=/etc/alertmanager/config.yaml']
+    ports:
+      - 9093:9093
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
 
 volumes:
   prometheus_data: {}
@@ -204,6 +219,7 @@ volumes:
   mimir-2-data: {}
   mimir-3-data: {}
   minio-data: {}
+  alertmanager-data: {}
 
 networks:
   monitoring:

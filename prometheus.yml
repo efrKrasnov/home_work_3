@@ -53,3 +53,9 @@ remote_write:
     headers:
       X-Scope-OrgID: test
 
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets: ['alertmanager:9093']
+
+      
