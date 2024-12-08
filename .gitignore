@@ -2,3 +2,8 @@
 /logs
 /minio-data
 .env
+/grafana/data
+/mimir-1-data
+/mimir-2-data
+/mimir-3-data
+/prometheus-data

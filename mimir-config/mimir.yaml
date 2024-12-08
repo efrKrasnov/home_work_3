@@ -5,8 +5,8 @@ common:
     backend: s3
     s3:
       endpoint: minio:9000
-      access_key_id: ${MINIO_ROOT_USER}
-      secret_access_key: ${MINIO_ROOT_PASSWORD}
+      access_key_id: mimir
+      secret_access_key: supersecret
       insecure: true
       bucket_name: mimir
 
@@ -16,7 +16,7 @@ blocks_storage:
     dir: /data/ingester
 
 memberlist:
-  join_members: [mimir-1, mimir-2]
+  join_members: [mimir-1, mimir-2, mimir-3]
 
 ruler:
   rule_path: /data/ruler
@@ -28,4 +28,4 @@ limits:
   compactor_blocks_retention_period: 14d
 
 server:
-  log_level: info
+  log_level: warn
